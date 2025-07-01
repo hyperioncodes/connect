@@ -11,7 +11,7 @@ export default function Index() {
       }}
     >
       <Text style={{fontFamily:'Nunito'}}>Edit app/index.tsx to edit this screen.</Text>
-      <Loader size="large"/>
+      
     </View>
   );
 }
