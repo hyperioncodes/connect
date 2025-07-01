@@ -6,7 +6,7 @@ import { useEffect, useCallback } from 'react';
 import { useAuth } from '../utils/useAuth';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 SplashScreen.preventAutoHideAsync();
-
+ //hi
 export default function RootLayout() {
   const router = useRouter();
  
