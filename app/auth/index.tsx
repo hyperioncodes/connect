@@ -7,33 +7,30 @@ import { auth } from "../firebaseConfig";
 import Button from "@/components/Button";
 import isValidEmail from "@/utils/isValidEmail";
 import Input from "@/components/Input";
+import Loader from "@/components/Loader";
+import { makeErrorReadable } from "@/utils/makeErrorReadable";
 export default function Login(){
     const navigation = useNavigation();
     const router = useRouter()
     const [email,setEmail] = useState("")
     const [pass,setPass] = useState("")
     const [emailError,setEmailError] = useState("")
-    const makeErrorReadable = (error:string)=>{
-        switch(error){
-            case "Firebase: Error (auth/invalid-credential).":
-                return "The email and password you entered do not are not correct. Please double check them, or create an account."
-            break
-            default:
-                return error
-        }}
-    function login(){
-        if(isValidEmail(email)){
-            
-        signInWithEmailAndPassword(auth,email,pass)
-        .then((user)=>{
+    const [loading,setLoading] = useState(false)
+   
+    async function login(){
+        if(true){
+            setLoading(true)
+        try{  
+        const user = await signInWithEmailAndPassword(auth,email,pass)
         router.replace("/")
-        })
-        .catch((error)=>{
-            setEmailError(makeErrorReadable(error.message))
-        })
+        }catch(error){
+            // @ts-ignore
+            setEmailError(makeErrorReadable(error.code,"auth","login"))
+            setLoading(false)
+        }
             
         }else{
-            setEmailError("The email you entered was invalid. \n Please doublecheck it and try again.")
+        setEmailError("The email you entered is invalid. \n Please double-check it and try again.")
         }
     }
   useEffect(() => {
@@ -43,6 +40,8 @@ export default function Login(){
   }, [navigation]);
     return(
         <View style={styles.mainContainer}>
+            {loading ? 
+           <Loader size="xl"></Loader>: <>
             <Image style={styles.image} source={require("../../assets/images/Connect.png")}/>
     <Text style={styles.header}>Connect Login</Text>
         {emailError ? <Text style={styles.error}>{emailError}</Text>:null}
@@ -59,6 +58,7 @@ export default function Login(){
     isPass={true}
     />
     <Button width="40%" text="Login" onPress={login} isBlue={true}/>
+    </>}
     </View>
 
 )
