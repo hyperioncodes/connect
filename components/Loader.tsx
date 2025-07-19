@@ -1,8 +1,9 @@
 import {StyleSheet,Image} from "react-native"
 
 type Props={
-size?:string;
+size?:string
 isDark?:boolean
+
 }
 export default function Loader({size="normal",isDark}:Props){
     let style;

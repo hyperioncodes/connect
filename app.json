@@ -37,10 +37,10 @@
       [
         "expo-image-picker",
         {
-          "photosPermission":"To upload an image, you must allow camera access."
+          "photosPermission": "To upload an image, you must allow camera access."
         }
-      ]
-     
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

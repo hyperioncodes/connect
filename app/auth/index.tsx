@@ -1,6 +1,6 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "expo-router";
-import { Text,StyleSheet,View,TextInput,Image,Alert} from "react-native";
+import { useRouter,Link} from "expo-router";
+import { Text,StyleSheet,TextInput,Image,Alert,View} from "react-native";
 import { useNavigation} from "expo-router";
 import { useEffect,useState} from "react";
 import { auth } from "../firebaseConfig";
@@ -18,14 +18,16 @@ export default function Login(){
     const [loading,setLoading] = useState(false)
    
     async function login(){
-        if(true){
+        if(isValidEmail(email)){
             setLoading(true)
         try{  
         const user = await signInWithEmailAndPassword(auth,email,pass)
-        router.replace("/")
+            router.replace("/")
         }catch(error){
             // @ts-ignore
             setEmailError(makeErrorReadable(error.code,"auth","login"))
+            setEmail("")
+            setPass("")
             setLoading(false)
         }
             
@@ -39,9 +41,16 @@ export default function Login(){
     })
   }, [navigation]);
     return(
-        <View style={styles.mainContainer}>
+        
+        <View>
             {loading ? 
-           <Loader size="xl"></Loader>: <>
+            <View style={styles.scroll}>
+           <Loader size="large"></Loader>
+           <Text style={styles.mainText}>Loading...</Text>
+           </View>
+           : 
+            <View style={styles.mainContainer}>
+           
             <Image style={styles.image} source={require("../../assets/images/Connect.png")}/>
     <Text style={styles.header}>Connect Login</Text>
         {emailError ? <Text style={styles.error}>{emailError}</Text>:null}
@@ -58,9 +67,12 @@ export default function Login(){
     isPass={true}
     />
     <Button width="40%" text="Login" onPress={login} isBlue={true}/>
-    </>}
+    <Text style={styles.or}>OR</Text>
+   <Link href="/auth/createAccount" style={styles.link}>Request an Account</Link>
     </View>
-
+    }
+    </View>
+            
 )
     
 }
@@ -71,12 +83,29 @@ const styles = StyleSheet.create({
              fontFamily:"Nunito",
             
         },
+        or:{
+        fontFamily:"Nunito",
+        textAlign:'center',
+        fontSize:20,
+        padding:20
+        },
+        link:{
+           color:"#3a86ff",
+           fontSize:20
+        },
         mainContainer:{
             alignItems:"center",
             justifyContent:"center",
             
         },
-        
+        scroll:{
+            justifyContent:"center",
+            alignItems:"center",
+            paddingBottom:40,
+            flexGrow:1,
+             width: "100%",
+             
+        },
         image:{
             width:150,
             height:150,
@@ -92,8 +121,9 @@ const styles = StyleSheet.create({
             height:50,
             borderRadius:15,
             margin:20,
-            justifyContent:"center",
-            alignItems:"center"
+justifyContent:"center",
+            alignItems:"center",
+            
             
         },
         buttonText:{
@@ -101,6 +131,9 @@ const styles = StyleSheet.create({
             fontSize:30,
             
             
+        },
+        mainText:{
+            fontFamily:"Nunito"
         }
     })
     
