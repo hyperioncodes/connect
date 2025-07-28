@@ -38,6 +38,6 @@ yarn-error.*
 
 app-example
 # firebase api config
-app/firebaseConfig.js
+config/supabase.js
 #vscode files
 .vscode/

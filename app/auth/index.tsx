@@ -3,7 +3,7 @@ import { useRouter,Link} from "expo-router";
 import { Text,StyleSheet,TextInput,Image,Alert,View} from "react-native";
 import { useNavigation} from "expo-router";
 import { useEffect,useState} from "react";
-import { auth } from "../firebaseConfig";
+import supabase from "@/configs/supabase";
 import Button from "@/components/Button";
 import isValidEmail from "@/utils/isValidEmail";
 import Input from "@/components/Input";
@@ -19,18 +19,27 @@ export default function Login(){
    
     async function login(){
         if(isValidEmail(email)){
-            setLoading(true)
-        try{  
-        const user = await signInWithEmailAndPassword(auth,email,pass)
-            router.replace("/")
-        }catch(error){
-            // @ts-ignore
-            setEmailError(makeErrorReadable(error.code,"auth","login"))
-            setEmail("")
-            setPass("")
+            setLoading(true) 
+        const {data,error} = await supabase.auth.signInWithPassword({email:email,password:pass})
+        if(error){
+            switch(error.message){
+                case "Invalid login credentials":
+                setEmailError("Your email or password is incorrect.")
+                break
+                case "User not found":
+                setEmailError("No user is registered with this email address.")
+                break
+                case "Password is required":
+                    setEmailError("No password was entered.")
+                break
+                default:
+                setEmailError(error.message)
+
+            }
             setLoading(false)
+        }else{
+            router.replace("/")   
         }
-            
         }else{
         setEmailError("The email you entered is invalid. \n Please double-check it and try again.")
         }

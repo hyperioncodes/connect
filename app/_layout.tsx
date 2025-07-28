@@ -1,10 +1,10 @@
-import { Stack, useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
+import { Stack, useRouter } from 'expo-router';
 
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useCallback } from 'react';
-import { useAuth } from '../utils/useAuth';
-import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import { useEffect } from 'react';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import getCurrentUser from '@/utils/getCurrentUser';
 SplashScreen.preventAutoHideAsync();
  //hi
 export default function RootLayout() {
@@ -14,21 +14,21 @@ export default function RootLayout() {
     Nunito: require('../assets/fonts/Nunito.ttf'),
   });
 
-  const { user, loading: authLoading } = useAuth();
-
+  const user = getCurrentUser()
+  
   // runs to hide splash screen
   useEffect(() => {
-    if ((loaded || error) && !authLoading) {
+    if ((loaded || error)) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, error, authLoading]);
+  }, [loaded, error]);
 
   //redirects once loading
   useEffect(() => {
-    if ((loaded || error) && !authLoading && !user) {
+    if ((loaded || error) && !user) {
       router.replace('/auth');
     }
-  }, [loaded, error, authLoading, user]);
+  }, [loaded, error, user]);
 
   if (!loaded && !error) {
     return null;
