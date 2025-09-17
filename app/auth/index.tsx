@@ -65,13 +65,13 @@ export default function Login(){
         {emailError ? <Text style={styles.error}>{emailError}</Text>:null}
     <Input
     placeholder="Email"
-    onChange={setEmail}
+    onChangeText={setEmail}
     value={email}
     isEmail={true}
     />
     <Input
     placeholder="Password"
-    onChange={setPass}
+    onChangeText={setPass}
     value={pass}
     isPass={true}
     />

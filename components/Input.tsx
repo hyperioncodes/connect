@@ -1,16 +1,16 @@
 import { TextInput,StyleSheet} from "react-native"
 type Props={
     placeholder:string,
-    onChange:any,
+    onChangeText:any,
     value:any,
     isEmail?:boolean,
     isPass?:boolean,
 }
-export default function Input({placeholder,onChange,value,isEmail,isPass}:Props){
+export default function Input({placeholder,onChangeText,value,isEmail,isPass}:Props){
     return (
         <TextInput
         placeholder={placeholder}
-        onChangeText={onChange}
+        onChangeText={onChangeText}
         value={value}
         {...(isEmail&&{keyboardType:"email-address"})}
         {...(isPass&&{secureTextEntry:true})}

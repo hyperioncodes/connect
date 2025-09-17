@@ -1,7 +1,18 @@
-
-import { collection,addDoc,serverTimestamp} from "firebase/firestore"
 import * as SecureStore from "expo-secure-store"
-export default async function sendAccountRequest(name:string,email:string,pass:string,photo:string,type:number){
-
-
+import supabase from "@/configs/supabase"
+export default async function sendAccountRequest(name:string,email:string,photo:string,type:number,pass:string){
+const { data, error } = await supabase
+  .from('acc_reqs')
+  .insert([
+    { name:name,email:email,photo:photo,acc_type:type,pass:pass},
+  ])
+  .select()
+  
+  if(error||!data){
+    //implement error handling later
+    return [null,error]
+  }else{
+    return [data,null]
+  }
+  
 }
