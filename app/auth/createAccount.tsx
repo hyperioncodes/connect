@@ -12,7 +12,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {WebView} from "react-native-webview"
 import Loader from "@/components/Loader";
 import sendAccountRequest from "@/utils/submitAccountRequest";
+import * as SecureStore from "expo-secure-store";
+import { useNavigation } from "expo-router";
 export default function createAccount(){
+const navigation = useNavigation()
+useEffect(() => {
+        navigation.setOptions({
+          title: 'Connect - Creating Account',
+          swipeEnabled: false,      // disable swipe gesture
+        headerLeft: () => null, 
+        })
+})
 const router = useRouter()
 const [width,setWidth]=useState<any>("100%")
 const [height,setHeight]= useState<any>(500)
@@ -87,8 +97,6 @@ useEffect(()=>{
                 //setHeight(convert(event.data.height))  
             }else if(event.data.type==="base64"){  
                 setImage(event.data.image)
-               
-                
             }
         }
         window.addEventListener("message",handleMessageWeb)
@@ -107,15 +115,24 @@ const request = async function(name:any,email:any,image:any,accType:any,pass:any
     let [data,error] = await sendAccountRequest(name,email,image,accType,pass)
 
     if(error){
-        throw new Error(JSON.stringify(error))
+        console.log(data)
+        console.log(error)
     }else if(!data){
     setLoading(false)
     setError("Account request failed. Please wait and try again.")
-    }else{
+    }else if(Array.isArray(data)&&data.length>0){
         //@ts-ignore
+        console.log(data)
         AsyncStorage.setItem("requuid",data[0].id)
+        if(Platform.OS!=="web"){
+        await SecureStore.setItemAsync("userpass",pass)
+        }else{
+            AsyncStorage.setItem("userpass",pass)
+        }
+        router.replace("/auth/requestSent")
+    }else{
+        console.log(data)
     }
-    router.replace("/auth/requestSent")
 }
     return(
     <View>

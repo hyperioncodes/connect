@@ -1,69 +1,77 @@
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Stack, useRouter, useRootNavigationState, usePathname } from 'expo-router';
+import {Drawer} from "expo-router/drawer"
 import * as SplashScreen from 'expo-splash-screen';
+import { useEffect, useState } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import getCurrentUser from '@/utils/getCurrentUser';
-import { useRootNavigationState } from 'expo-router';
-
-SplashScreen.preventAutoHideAsync();
-
+import { useNavigationState } from '@react-navigation/native';
+import CustomDrawer from '@/components/CustomDrawer';
 export default function RootLayout() {
-  const router = useRouter();
-  const navigationState = useRootNavigationState();
+  const [isDrawerEnabled, setDrawerEnabled] = useState(true);
 
-  const [user, setUser] = useState<any>(null);
-  const [fontsLoaded, fontError] = useFonts({
+  const state = useNavigationState((state) => state);
+
+  useEffect(() => {
+    const currentRoute = state?.routes[state.index]?.name;
+
+    // Disable drawer for auth routes
+    const disableDrawerRoutes = ['auth/index', 'auth/register'];
+
+    setDrawerEnabled(!disableDrawerRoutes.includes(currentRoute));
+  }, [state]);
+
+
+
+  // Load fonts
+  const [fontsLoaded] = useFonts({
     Nunito: require('../assets/fonts/Nunito.ttf'),
   });
-  const [isReady, setIsReady] = useState(false);
 
-  // Load user async
+  // Prevent splash screen from auto-hiding (only once)
   useEffect(() => {
-    async function fetchUser() {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-    }
-    fetchUser();
+    SplashScreen.preventAutoHideAsync();
   }, []);
 
-  // Hide splash screen only after fonts loaded, user loaded, and navigation ready
+  // Set user on mount (assuming synchronous, otherwise handle async)
+  
+
+  // Hide splash screen after fonts load and user is set
   useEffect(() => {
-    if (fontsLoaded && !fontError && user !== null && navigationState?.key) {
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
-      setIsReady(true);
     }
-  }, [fontsLoaded, fontError, user, navigationState?.key]);
+  }, [fontsLoaded]);
 
-  // Redirect once ready and user is empty
-  useEffect(() => {
-    if (!isReady) return;
-    if (!user || Object.keys(user).length === 0) {
-      router.replace('/auth');
-      console.log('redirect to auth');
-    } else {
-      console.log('User:', JSON.stringify(user));
-    }
-  }, [isReady, user, router]);
+  // Redirect once navigation is ready and fonts/user loaded
 
-  if (!isReady) {
-    return null; // Keep splash screen visible
+
+  // Don't render until fonts and user are ready (to avoid flicker)
+  if (!fontsLoaded) {
+    return null;
   }
+const pathname = usePathname();
+const isAuth = pathname.startsWith("/auth")||pathname.startsWith("/mobile")
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1 }}>
-        <Stack
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: '#3a86ff',
-            },
-            headerTintColor: '#FFFFFF',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-            },
-          }}
-        />
+        <Drawer
+        screenOptions={{
+          drawerActiveTintColor: '#3a86ff',
+          drawerType: 'permanent',
+          headerStyle: { backgroundColor: '#3a86ff' },
+          headerTintColor: '#fff',
+          drawerStyle:{
+             width: isAuth ? 0 : 320,
+          },
+          headerTitleStyle: { fontWeight: 'bold' },
+          headerLeft: () => null,
+          
+        }}
+        
+        drawerContent={(props) => <CustomDrawer {...props} />}
+      />
       </SafeAreaView>
     </SafeAreaProvider>
   );

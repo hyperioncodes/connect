@@ -9,6 +9,7 @@ import isValidEmail from "@/utils/isValidEmail";
 import Input from "@/components/Input";
 import Loader from "@/components/Loader";
 import { makeErrorReadable } from "@/utils/makeErrorReadable";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function Login(){
     const navigation = useNavigation();
     const router = useRouter()
@@ -16,7 +17,16 @@ export default function Login(){
     const [pass,setPass] = useState("")
     const [emailError,setEmailError] = useState("")
     const [loading,setLoading] = useState(false)
-   
+
+    useEffect(()=>{
+        async function f(){
+        const uuid = await AsyncStorage.getItem("requuid")
+        if(uuid!==null){
+        router.replace("/auth/requestSent")
+        }
+        }
+        f()
+    },[])
     async function login(){
         if(isValidEmail(email)){
             setLoading(true) 
@@ -47,6 +57,8 @@ export default function Login(){
   useEffect(() => {
     navigation.setOptions({
       title: 'Connect - Login',
+      swipeEnabled: false,      // disable swipe gesture
+    headerLeft: () => null, 
     })
   }, [navigation]);
     return(
