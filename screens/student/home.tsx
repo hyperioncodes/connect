@@ -6,7 +6,7 @@ type Props = {
     notifications:number,
     notifications_from:any[]
 }
-export default function AdminHome({name,notifications,notifications_from}:Props){
+export default function StudentHome({name,notifications,notifications_from}:Props){
 console.log(typeof notifications_from)
 console.log(JSON.stringify(notifications_from))
 return(
@@ -19,7 +19,7 @@ return(
 <Box message="hi" id=""/>
 {
 !notifications || notifications==0 
-? <Text style={[styles.text,{fontSize:15,textAlign:"center",top:"20%"}]}>No new notifications. You're all caught up!</Text> 
+? <Text style={[styles.text,{fontSize:15,textAlign:"center",top:"20%"}]}>No new notifications. You're all caught up.</Text> 
 : <ScrollView>
 {notifications_from.map((element, index) => (
         <View key={index}>
