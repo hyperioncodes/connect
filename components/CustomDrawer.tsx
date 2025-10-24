@@ -3,33 +3,33 @@ import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import { MaterialIcons } from '@expo/vector-icons';
 import { usePathname } from 'expo-router';
 import { useRouter } from 'expo-router';
-import { StyleSheet } from 'react-native';
-
+import { StyleSheet,Text } from 'react-native';
+import getAccountType from '@/utils/getAccountType';
+import supabase from '@/configs/supabase';
+import StudentDrawer from './drawers/StudentDrawer';
+import { useEffect, useState } from 'react';
 export default function CustomDrawer(props:any) {
+
+
+const [ToRender,setRender] = useState<React.ComponentType<any>>(Text)
+useEffect(()=>{
+const setup = async ()=>{
+const [type,terror]= await getAccountType()
+switch(type){
+        case 1:
+        console.log("111")
+        setRender(()=>StudentDrawer)
+        
+        break;
+    }
+}
+setup()
+})
 const router = useRouter()
 const path = usePathname()
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={styles.container}>
-    
-      <DrawerItem
-        label="Home"
-        onPress={() => router.replace("/")}
-        focused={path==="/"}
-        icon={({ color, size }) => (
-          <MaterialIcons name="home" size={size} color={color} />
-        )}
-      />
-      
-      <DrawerItem
-        label="Settings"
-        focused={path==="/settings"}
-        onPress={() => router.replace("/settings")}
-        icon={({ color, size }) => (
-          <MaterialIcons name="settings" size={size} color={color} />
-        )}
-      />
-      {/* Add custom links or buttons here */}
-    </DrawerContentScrollView>
+
+    <ToRender/>
   );
 }
 const styles = StyleSheet.create({

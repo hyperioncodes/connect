@@ -62,9 +62,11 @@ const isAuth = pathname.startsWith("/auth")||pathname.startsWith("/mobile")
           drawerType: 'permanent',
           headerStyle: { backgroundColor: '#3a86ff' },
           headerTintColor: '#fff',
+          drawerActiveBackgroundColor:"#ffffffff",
           drawerStyle:{
-             width: isAuth ? 0 : 320,
+             width: isAuth ? 0 : 320
           },
+          
           headerTitleStyle: { fontWeight: 'bold' },
           headerLeft: () => null,
           

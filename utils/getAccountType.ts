@@ -1,5 +1,8 @@
 import supabase from "@/configs/supabase";
-export default async function getAccountType(id:string){
+export default async function getAccountType(){
+const {data:{user},error:accerror} = await supabase.auth.getUser()
+if(!user) return[null,"No user found."]
+const id = user.id
 const {data,error} = await supabase
 .from("acc_details")
 .select("type")

@@ -1,7 +1,8 @@
 type notificationsObject = {
     message:string,
-    type:"chat"|"req"|"alert"|"pa"|"rem",
+    type:"chat"|"calendar",
     id?:string,
-    from:string
+    from:string,
+    routeTo:string
 }
 export default notificationsObject

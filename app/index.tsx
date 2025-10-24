@@ -4,11 +4,11 @@ import supabase from "@/configs/supabase";
 import { useRouter } from "expo-router";
 import { useEffect,useState } from "react";
 import getAccountType from "@/utils/getAccountType";
-import StudentHome from "@/screens/student/home2";
+import StudentHome from "@/app/student/home";
 import notificationsObject from "@/types/notificationsFrom"
 export default function Index() {
 const [ToRender,setRender] = useState<React.ComponentType<any>|null>(null)
-const notifications:notificationsObject[] = [{message:"Hi",from:"8m",type:"chat"}] 
+const notifications:notificationsObject[] = [{message:"Hi",from:"8m",type:"chat",routeTo:"/index"}] 
   useEffect(()=>{
   const check = async ()=>{
   const {data:{user},error} = await supabase.auth.getUser()
@@ -17,11 +17,11 @@ const notifications:notificationsObject[] = [{message:"Hi",from:"8m",type:"chat"
   if(!user){
     router.replace("/auth")
   }else{
-    const [acctype,error] = await getAccountType(user.id)
+    const [acctype,error] = await getAccountType()
     console.log(acctype)
     switch(acctype){
       case 1:
-      setRender(()=>StudentHome)
+      router.replace("/student/home")
       break;
 
     }

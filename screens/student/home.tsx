@@ -1,6 +1,7 @@
 import { Text,View,ScrollView, StyleSheet } from "react-native";
 import Box from "@/components/Box";
 import notificationsObject from "@/types/notificationsFrom"
+//@ts-nocheck
 type Props = {
     name:string,
     notifications:number,
@@ -16,14 +17,14 @@ return(
 <View style={styles.title}>
     <Text style={[styles.text,styles.titleText]}>Notifications</Text>
 </View>
-<Box message="hi" id=""/>
+
 {
 !notifications || notifications==0 
 ? <Text style={[styles.text,{fontSize:15,textAlign:"center",top:"20%"}]}>No new notifications. You're all caught up.</Text> 
 : <ScrollView>
 {notifications_from.map((element, index) => (
         <View key={index}>
-            <Box message="hi" id=""/>
+            
         </View>
       ))}
 </ScrollView>
