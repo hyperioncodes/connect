@@ -4,4 +4,3 @@ const supabaseUrl = "http://127.0.0.1:54321";
 const supabaseKey = "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH";
 const supabase = createClient(supabaseUrl, supabaseKey);
 export default supabase;
-console.log(typeof supabase)

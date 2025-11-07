@@ -9,6 +9,5 @@ export default async function getCalendarEvents() {
     .from("binder")
     .select("*")
     .eq("id", id);
-console.log(id)
   return eventdata;
 }

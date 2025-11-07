@@ -1,4 +1,11 @@
-import { Text, View, Pressable, StyleSheet,TextInput } from "react-native";
+import {
+  Text,
+  View,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  TurboModuleRegistry,
+} from "react-native";
 import { useEffect, useState } from "react";
 import getCalendarEvents from "@/utils/getCalendarEvents";
 import getWeek from "@/utils/getWeek";
@@ -16,6 +23,7 @@ import {
 import supabase from "@/configs/supabase";
 import getUserId from "@/utils/getUserId";
 import { runOnJS } from "react-native-reanimated";
+import { MaterialIcons } from "@expo/vector-icons";
 type week = {
   week: number;
   year: number;
@@ -25,7 +33,6 @@ type daySchedule = {
     class: {
       event: string;
       id: string;
-      modified?:boolean
     }[];
   };
   date: string;
@@ -45,61 +52,147 @@ export default function StudentBinder() {
     "Other",
   ];
 
-  const [classList, updateList] = useState<scheduleMap>({});
-  const [events, setEvents] = useState<any | null>(null);
-  const [loading, isLoading] = useState(true);
+  const [classList, updateList] = useState<scheduleMap>({}); //List of classes
+  const [events, setEvents] = useState<any | null>(null); //List of events !
+  const [isDTap, setDTap] = useState(false); // is click a double tap
+  const [loading, isLoading] = useState(true); // are events loading
   const [curWeek, setWeek] = useState<week>({
+    //current week
     week: getWeek(),
     year: date.getFullYear(),
   });
-  const handleUnfocus = async ()=>{
-    select({class:7,date:""})
-  }
-  const [selected,select] = useState<{class:number,date:string}>({date:"",class:7})
+  const handleUnfocus = async () => {
+    if (currentVal !== startVal) {
+      if (!classList[selected.date]?.events?.class[selected.class]) {
+        const id = await getUserId();
+        const forDate = parse(
+          selected.date,
+          "EEE MMM dd yyyy HH:mm:ss",
+          new Date()
+        );
+        const { data, error } = await supabase.from("binder").insert({
+          id: id,
+          title: currentVal,
+          for: forDate,
+          class: selected.class,
+        });
+        setChange({ date: selected.date, class: selected.class });
+      } else {
+        const id = await getUserId();
+        const forDate = parse(
+          selected.date,
+          "EEE MMM dd yyyy HH:mm:ss",
+          new Date()
+        );
+        const { data, error } = await supabase
+          .from("binder")
+          .update({
+            id: id,
+            title: currentVal,
+          })
+          .eq(
+            "reminder_id",
+            classList[selected.date]?.events?.class[selected.class].id
+          );
+
+        setChange({ date: selected.date, class: selected.class });
+      }
+    }
+    select({ class: 7, date: "" });
+  };
+  const [selected, select] = useState<{ class: number; date: string }>({
+    date: "",
+    class: 7,
+  });
   const [range, setRange] = useState(getWeekRange(curWeek.week, curWeek.year));
-  const [currentVal,setCurrentVal] = useState("")
-  const [startVal,setStart] = useState("NH")
+  const [currentVal, setCurrentVal] = useState("");
+  const [startVal, setStart] = useState("NH");
+  const [startYet, setStartYet] = useState(false);
   const [technicalRange, setTechRange] = useState(
     getWeekDateObjects(curWeek.week, curWeek.year)
   );
+  useEffect(() => {
+    // Whenever curWeek changes, recalc all week-based values
+    const newTechRange = getWeekDateObjects(curWeek.week, curWeek.year);
+    const newRange = getWeekRange(curWeek.week, curWeek.year);
+    const newWeekDates = getWeekDates(newTechRange[0], newTechRange[1]);
+
+    setTechRange(newTechRange);
+    setRange(newRange);
+    setWeekDates(newWeekDates);
+  }, [curWeek]);
+  const [hasChanged, setChange] = useState<{ class: number; date: string }>({
+    class: 7,
+    date: "",
+  }); // Yes i know this is a terrible way of doing this, fix it if you want to
   const [thisWeek, setWeekDates] = useState<string[]>(
     getWeekDates(technicalRange[0], technicalRange[1])
   );
-  const handleDTap = async (date:string,classNum:number)=>{
-  console.log(currentVal)
-  console.log(startVal)
-  console.log(date,classNum)
-    if(selected.class<7){
-      if(currentVal!==startVal){
-        console.log("new")
-      if(classList[selected.date]?.events?.class[selected.class]?.modified){
-      const id = await getUserId()
-      const forDate = parse(selected.date,"EEE MMM dd yyyy HH:mm:ss",new Date())
-      console.log("new")
+  useEffect(() => {
+    console.log("Selected changed:", selected);
+  }, [selected]);
+  const handleDTap = async (date: string, classNum: number) => {
+    if (startYet) {
+      if (currentVal !== startVal) {
+        if (!classList[selected.date]?.events?.class[selected.class]) {
+          const id = await getUserId();
+          const forDate = parse(
+            selected.date,
+            "EEE MMM dd yyyy HH:mm:ss",
+            new Date()
+          );
+          const { data, error } = await supabase.from("binder").insert({
+            id: id,
+            title: currentVal,
+            for: forDate,
+            class: selected.class,
+          });
+          setChange({ date: selected.date, class: selected.class });
+        } else {
+          const id = await getUserId();
+          const forDate = parse(
+            selected.date,
+            "EEE MMM dd yyyy HH:mm:ss",
+            new Date()
+          );
+          const { data, error } = await supabase
+            .from("binder")
+            .update({
+              id: id,
+              title: currentVal,
+            })
+            .eq(
+              "reminder_id",
+              classList[selected.date]?.events?.class[selected.class].id
+            );
+
+          setChange({ date: selected.date, class: selected.class });
+        }
       }
-      }
-      }
-      setStart(classList[date]?.events?.class[classNum]?.event)
-      select({date:date,class:classNum})
-      console.log(selected)
-  }
+    }
+    setStart(classList[date]?.events?.class[classNum]?.event || "NH");
+    select({ date: date, class: classNum });
+    setCurrentVal(classList[date]?.events?.class[classNum]?.event);
+  };
+  const slideLeft = () => {};
   const DTap = (date: string, classNum: number) =>
     Gesture.Tap()
-      .maxDuration(250)
+      .maxDuration(100)
       .numberOfTaps(2)
       .onStart(async () => {
-      runOnJS(handleDTap)(date,classNum)
+        setDTap(true);
+        runOnJS(handleDTap)(date, classNum);
+        setStartYet(true);
       });
   useEffect(() => {
     const getEvents = async () => {
       let dates: scheduleMap = {};
       const localevents = await getCalendarEvents();
-      console.log(localevents);
+      console.log("localevents: " + JSON.stringify(localevents));
       setEvents(localevents);
       if (!localevents) throw new Error("No local events");
       localevents.map((element, index) => {
         const fromDate = parse(element.for, "yyyy-MM-dd", new Date());
-        console.log(fromDate);
         const from = getObjectKeyDate(fromDate);
         if (from in dates) {
           dates[from].events.class[element.class].event +=
@@ -109,108 +202,147 @@ export default function StudentBinder() {
           dates[from].events.class[element.class] ??= {
             event: "",
             id: element.reminder_id,
-            modified:true
           };
           dates[from].events.class[element.class].event = element.title;
         }
       });
       updateList(dates);
-      console.log(dates);
       isLoading(false);
     };
     getEvents();
-  }, []);
+  }, [hasChanged]);
   const daysOfWeek = ["", "M", "T", "W", "Th", "F"];
   return (
     <GestureHandlerRootView>
       <View style={styles.main}>
         <View style={styles.topBar}>
-          <Text style={styles.week}>
-            Week of {range[0].slice(0, -6)} to {range[1]}
-          </Text>
+          <View></View>
+          <View>
+            <Text style={styles.week}>
+              Week of {range[0].slice(0, -6)} to {range[1]}
+            </Text>
+          </View>
+          <View style={{flexDirection:"row",right:10}}>
+            <Pressable style={styles.arrow}>
+              <MaterialIcons name="navigate-before" color={"white"} size={40} onPress={()=>setWeek(curWeek.week==52?{week:1,year:curWeek.year-1}:{week:curWeek.week-1,year:curWeek.year})}/>
+            </Pressable>
+            <Pressable style={styles.arrow}>
+              <MaterialIcons name="navigate-next" color={"white"} size={40} onPress={()=>setWeek(curWeek.week==52?{week:1,year:curWeek.year+1}:{week:curWeek.week+1,year:curWeek.year})}/>
+            </Pressable>
+          </View>
         </View>
-      <View style={[styles.main,styles.calendar]}>
-        <View style={[styles.row]}>
-          {daysOfWeek.map((element, index) => (
-            <View
-              style={[
-                index == 0 ? styles.smallDate : styles.box,
-                styles.dateBox,
-                index == 0 ? styles.topLeft : null,
-                index == 5 ? styles.topRight : null,
-              ]}
-            >
-              <Text style={styles.date}>{element}</Text>
+        <View style={[styles.main, styles.calendar]}>
+          <View style={[styles.row]}>
+            {daysOfWeek.map((element, index) => (
+              <View
+                style={[
+                  index == 0 ? styles.smallDate : styles.box,
+                  styles.dateBox,
+                  index == 0 ? styles.topLeft : null,
+                  index == 5 ? styles.topRight : null,
+                ]}
+              >
+                <Text style={styles.date}>{element}</Text>
+              </View>
+            ))}
+          </View>
+          {classes.map((element, cindex) => (
+            <View key={cindex} style={styles.row}>
+              <View
+                style={[
+                  styles.className,
+                  /*cindex==0?styles.topLeft:null,*/ cindex == 6
+                    ? styles.bottomLeft
+                    : null,
+                ]}
+              >
+                <Text>{element}</Text>
+              </View>
+              {thisWeek.slice(0, -2).map((element, index) => (
+                <GestureDetector gesture={DTap(element, cindex)}>
+                  <View
+                    style={[
+                      styles.box,
+                      /*index == 4&&cindex==0 ? styles.topRight : null,*/ index ==
+                        4 && cindex == 6
+                        ? styles.bottomRight
+                        : null,
+                    ]}
+                  >
+                    {selected.class == cindex && selected.date == element ? (
+                      <TextInput
+                        onChangeText={setCurrentVal}
+                        style={styles.input}
+                        autoFocus
+                        multiline={true}
+                        numberOfLines={3}
+                        caretHidden={false}
+                        onBlur={handleUnfocus}
+                        defaultValue={
+                          classList[element]?.events?.class[cindex]?.event //does this event exist?
+                            ? classList[element]?.events?.class[cindex]?.event // if so, name it said event
+                            : "NH" //if not, write NH (No Homework)
+                        }
+                      />
+                    ) : (
+                      <Text
+                        style={styles.binderReminder}
+                        ellipsizeMode="tail"
+                        numberOfLines={3}
+                        key={index}
+                      >
+                        {
+                          classList[element]?.events?.class[cindex]?.event //does this event exist?
+                            ? classList[element]?.events?.class[cindex]?.event // if so, name it said event
+                            : "NH" //if not, write NH (No Homework)
+                        }
+                      </Text>
+                    )}
+                  </View>
+                </GestureDetector>
+              ))}
             </View>
           ))}
         </View>
-        {classes.map((element, cindex) => (
-          <View key={cindex} style={styles.row}>
-            <View style={[styles.className, /*cindex==0?styles.topLeft:null,*/cindex==6?styles.bottomLeft:null]}>
-              <Text>{element}</Text>
-            </View>
-            {thisWeek.slice(0, -2).map((element, index) => (
-              <GestureDetector gesture={DTap(element, cindex)}>
-                <View style={[styles.box, /*index == 4&&cindex==0 ? styles.topRight : null,*/index == 4&&cindex==6 ? styles.bottomRight : null]}>
-                  {selected.class==cindex&&selected.date==element?
-                  <TextInput
-                  onChangeText={setCurrentVal}
-                  style={styles.input}
-                  autoFocus
-                  multiline={true}
-                  numberOfLines={3}
-                  caretHidden={false}
-                  onBlur={handleUnfocus}
-                  defaultValue={
-                    classList[element]?.events?.class[cindex]?.event //does this event exist?
-                        ? classList[element]?.events?.class[cindex]?.event // if so, name it said event
-                        : "NH" //if not, write NH (No Homework)
-                  }
-                  />:
-                  <Text
-                    style={styles.binderReminder}
-                    ellipsizeMode="tail"
-                    numberOfLines={3}
-                    key={index}
-                  >
-                    {
-                      classList[element]?.events?.class[cindex]?.event //does this event exist?
-                        ? classList[element]?.events?.class[cindex]?.event // if so, name it said event
-                        : "NH" //if not, write NH (No Homework)
-                    }
-                  </Text>
-                  }
-                </View>
-              </GestureDetector>
-            ))}
-          </View>
-        ))}
-      
-      </View>
       </View>
     </GestureHandlerRootView>
   );
 }
 const styles = StyleSheet.create({
-  input:{
-    fontFamily:"Nunito",
-    borderWidth:0,
-    width:"75%",
-    height:"75%",
-    fontSize:15,
-    textAlign:"center",
+  arrow: {
+    backgroundColor: "#3a86ff",
+    margin:4,
+    width: 40,
+    height: 40,
+    borderRadius: 30,
   },
-  topLeft:{
-  borderTopLeftRadius:30
+  arrow2: {
+    backgroundColor: "#3a86ff",
+    bottom: "30%",
+    left: "90%",
+    width: 40,
+    height: 40,
+    borderRadius: 30,
   },
-  topRight:{
-  borderTopRightRadius:30
+  input: {
+    fontFamily: "Nunito",
+    borderWidth: 0,
+    width: "75%",
+    height: "75%",
+    fontSize: 15,
+    textAlign: "center",
   },
-  bottomLeft:{
-  borderBottomLeftRadius:30
+  topLeft: {
+    borderTopLeftRadius: 30,
   },
-  bottomRight:{
-  borderBottomRightRadius:30
+  topRight: {
+    borderTopRightRadius: 30,
+  },
+  bottomLeft: {
+    borderBottomLeftRadius: 30,
+  },
+  bottomRight: {
+    borderBottomRightRadius: 30,
   },
   binderReminder: {
     fontFamily: "Nunito",
@@ -222,10 +354,10 @@ const styles = StyleSheet.create({
     flex: 0.7,
     borderWidth: 1,
   },
-  calendar:{
-  height:"98%",
-  marginTop:"1%",
-  marginBottom:"1%"
+  calendar: {
+    height: "98%",
+    marginTop: "1%",
+    marginBottom: "1%",
   },
   dateBox: {
     backgroundColor: "#3a86ff",
@@ -247,9 +379,11 @@ const styles = StyleSheet.create({
   },
   topBar: {
     height: "10%",
-    justifyContent: "center",
+    alignItems:"center",
+    justifyContent:"space-between",
     borderWidth: 1,
     backgroundColor: "#fff",
+    flexDirection: "row",
   },
   main: {
     width: "100%",
@@ -261,7 +395,6 @@ const styles = StyleSheet.create({
     marginLeft: "0.5%",
     width: "98.95%",
     flexWrap: "nowrap",
-   
   },
   box: {
     alignItems: "center",
