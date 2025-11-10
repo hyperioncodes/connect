@@ -7,7 +7,7 @@ import {
   Dimensions,
 } from "react-native";
 import { useNavigation, useRouter } from "expo-router";
-import React, { useRef, useState, useLayoutEffect } from "react";
+import React, { useRef, useState, useLayoutEffect, useEffect } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   SafeAreaView,
@@ -91,7 +91,14 @@ export default function StudentHome() {
   const router = useRouter();
   const [isOpen, setOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(PANEL_WIDTH)).current; // Off-screen to the right
-  const navigation = useNavigation();
+const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({
+      title: "Home",
+      swipeEnabled: false, // disable swipe gesture
+      headerLeft: () => null,
+    });
+  }, [navigation]);
   const [notificationsNum, setNum] = useState(notifications);
 
   const toggleNotifications = () => {

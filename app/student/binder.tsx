@@ -24,6 +24,7 @@ import supabase from "@/configs/supabase";
 import getUserId from "@/utils/getUserId";
 import { runOnJS } from "react-native-reanimated";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "expo-router";
 type week = {
   week: number;
   year: number;
@@ -51,7 +52,14 @@ export default function StudentBinder() {
     "Fine Arts",
     "Other",
   ];
-
+const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({
+      title: "Binder",
+      swipeEnabled: false, // disable swipe gesture
+      headerLeft: () => null,
+    });
+  }, [navigation]);
   const [classList, updateList] = useState<scheduleMap>({}); //List of classes
   const [events, setEvents] = useState<any | null>(null); //List of events !
   const [isDTap, setDTap] = useState(false); // is click a double tap
@@ -177,7 +185,7 @@ export default function StudentBinder() {
   const slideLeft = () => {};
   const DTap = (date: string, classNum: number) =>
     Gesture.Tap()
-      .maxDuration(100)
+      .maxDuration(150)
       .numberOfTaps(2)
       .onStart(async () => {
         setDTap(true);
@@ -194,7 +202,7 @@ export default function StudentBinder() {
       localevents.map((element, index) => {
         const fromDate = parse(element.for, "yyyy-MM-dd", new Date());
         const from = getObjectKeyDate(fromDate);
-        if (from in dates) {
+        if (from in dates&&dates[from].events.class[element.class]) {
           dates[from].events.class[element.class].event +=
             "\n " + element.title;
         } else {
@@ -210,7 +218,7 @@ export default function StudentBinder() {
       isLoading(false);
     };
     getEvents();
-  }, [hasChanged]);
+  }, [hasChanged,curWeek]);
   const daysOfWeek = ["", "M", "T", "W", "Th", "F"];
   return (
     <GestureHandlerRootView>
@@ -275,7 +283,7 @@ export default function StudentBinder() {
                         style={styles.input}
                         autoFocus
                         multiline={true}
-                        numberOfLines={3}
+                        numberOfLines={2}
                         caretHidden={false}
                         onBlur={handleUnfocus}
                         defaultValue={

@@ -132,8 +132,8 @@ export default function createAccount() {
     );
 
     if (error) {
-      console.log(data);
-      console.log(error);
+      console.log("data: "+data);
+      console.log("error:"+error);
     } else if (!data) {
       setLoading(false);
       setError("Account request failed. Please wait and try again.");

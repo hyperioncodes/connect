@@ -9,7 +9,6 @@ import { Drawer } from "expo-router/drawer";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import getCurrentUser from "@/utils/getCurrentUser";
 import { useNavigationState } from "@react-navigation/native";
 import CustomDrawer from "@/components/CustomDrawer";
 export default function RootLayout() {
@@ -17,11 +16,6 @@ export default function RootLayout() {
 
   const state = useNavigationState((state) => state);
 
-  useEffect(() => {
-    const currentRoute = state?.routes[state.index]?.name;
-
-
-  }, [state]);
 
   // Load fonts
   const [fontsLoaded] = useFonts({

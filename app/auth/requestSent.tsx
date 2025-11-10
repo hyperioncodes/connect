@@ -51,7 +51,6 @@ export default function RequestSent() {
           data: { user },
           error: usererror,
         } = await supabase.auth.getUser();
-        console.log(usererror);
         if (!user) {
           console.log("no user or error");
           await login(email, password);

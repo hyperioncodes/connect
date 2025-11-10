@@ -10,16 +10,16 @@ export default async function sendAccountRequest(
   const { data, error } = await supabase
     .from("acc_reqs")
     .insert([{ name: name, email: email, photo: photo, acc_type: type }])
-    .select();
+ const {data:iddata} = await supabase.from("acc_reqs_id").select("id")
 
-  if (!data || !Array.isArray(data) || error) {
+  if (!iddata || !Array.isArray(iddata) || error) {
     return [null, error ?? new Error("Insert failed or returned no data")];
   }
   const { error: perror } = await supabase.from("acc_reqs_passwords").insert([
     {
       //@ts-ignore
       password: pass,
-      id: data[0].id,
+      id: iddata[0].id,
     },
   ]);
   if (perror) {

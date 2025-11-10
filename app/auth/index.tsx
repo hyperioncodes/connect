@@ -30,11 +30,18 @@ export default function Login() {
   async function login() {
     if (isValidEmail(email)) {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data,error } = await supabase.auth.signInWithPassword({
         email: email,
         password: pass,
       });
-      console.log(error)
+      
+      if(data.session){
+        console.log(data.session)
+        await supabase.auth.setSession(data.session)
+        const {data:useData,error:userError} = await supabase.auth.getUser()
+      console.log(JSON.stringify(userError))
+      }
+      
       if (error) {
         switch (error.message) {
           case "Invalid login credentials":
